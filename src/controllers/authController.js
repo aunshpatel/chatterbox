@@ -91,7 +91,8 @@ export const registerUser = async (req, res) => {
     res.json({
       success: true,
       message: "Registration completed",
-      user: user.toOrderedJSON(), // ✅ works only on the mongoose document
+      // user: user.toOrderedJSON(), // ✅ works only on the mongoose document
+      user: user,
       token: newToken
     });
   } catch (err) {

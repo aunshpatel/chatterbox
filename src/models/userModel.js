@@ -111,19 +111,19 @@ const userSchema = new Schema({
 }, { timestamps: true });
 
 // ✅ Custom ordered JSON method
-userSchema.methods.toOrderedJSON = function () {
-  return {
-    fullname: this.fullname,
-    phoneNumber: this.phoneNumber,
-    avatarURL: this.avatarURL,
-    status: this.status,
-    isOnline: this.isOnline,
-    lastSeenAt: this.lastSeenAt,
-    fcmTokens: this.fcmTokens,
-    isRegistered: this.isRegistered,
-    otp: this.otp,
-    otpExpiresAt: this.otpExpiresAt
-  };
-};
+// userSchema.methods.toOrderedJSON = function () {
+//   return {
+//     fullname: this.fullname,
+//     phoneNumber: this.phoneNumber,
+//     avatarURL: this.avatarURL,
+//     status: this.status,
+//     isOnline: this.isOnline,
+//     lastSeenAt: this.lastSeenAt,
+//     fcmTokens: this.fcmTokens,
+//     isRegistered: this.isRegistered,
+//     otp: this.otp,
+//     otpExpiresAt: this.otpExpiresAt
+//   };
+// };
 
 export default mongoose.model("User", userSchema);
