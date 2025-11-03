@@ -9,8 +9,6 @@ import { createServer } from "http";
 import authRoutes from './src/routes/authRoutes.js';
 import chatRoutes from './src/routes/chatRoutes.js';
 import messageRoutes from './src/routes/messageRoutes.js';
-
-// Socket
 import { initSocket } from './src/sockets/socket.js';
 
 dotenv.config();
@@ -23,9 +21,7 @@ app.use(logger("dev"));
 app.use(express.json());
 
 // ------ MongoDB connection ------
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch(err => console.error("❌ MongoDB connection error:", err));
+mongoose.connect(process.env.MONGO_URI).then(() => console.log("✅ Connected to MongoDB")).catch(err => console.error("❌ MongoDB connection error:", err));
 
 // ------ API routes ------
 app.get("/api", (req, res) => {
@@ -49,7 +45,10 @@ app.use((req, res) => {
 });
 
 // ------ Initialize Socket.io ------
-initSocket(httpServer);
+const io = initSocket(httpServer);
+
+// Optional: make `io` accessible globally (for emitting outside socket file if needed)
+app.set("io", io);
 
 // ------ Start the server ------
 const PORT = process.env.PORT || 3000;
