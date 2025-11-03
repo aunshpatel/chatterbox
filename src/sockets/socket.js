@@ -73,6 +73,7 @@ export const initSocket = (httpServer) => {
           { _id: { $in: messageIds }, chat: chatId },
           { $addToSet: { readBy: userId } } // add userId to readBy array
         );
+        // notify all participants except sender
         socket.to(chatId).emit("message-read", { chatId, userId, messageIds });
       } catch (err) {
         console.error("Error in message-read socket:", err);
@@ -94,7 +95,11 @@ export const initSocket = (httpServer) => {
           participants,
         });
 
-        io.to(participants).emit("group-created", groupChat); // notify all participants
+        // Notify all participants
+        participants.forEach(userId => {
+          const socketId = onlineUsers[userId];
+          if (socketId) io.to(socketId).emit("group-created", groupChat);
+        });
 
       } catch (err) {
         console.error("Error creating group:", err);
