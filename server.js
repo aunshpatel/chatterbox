@@ -6,6 +6,7 @@ import logger from "morgan";
 import dotenv from "dotenv";
 import cors from "cors";
 import { createServer } from "http";
+import authRoutes from './src/routes/authRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -25,6 +26,8 @@ mongoose.connect(process.env.MONGO_URI)
 app.get("/api", (req, res) => {
   res.json({ message: "Hello from Chatterbox backend!" });
 });
+
+app.use("/api/auth", authRoutes);
 
 // ------ Serve frontend SPA ------
 const __filename = fileURLToPath(import.meta.url);
