@@ -66,16 +66,48 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
-  fullname: { type: String },
-  phoneNumber: { type: String, required: true, unique: true },
-  avatarURL: { type: String },
-  status: { type: String },
-  isOnline: { type: String },
-  lastSeenAt: { type: Date },
-  fcmTokens: { type: [String], default: [] },
-  isRegistered: { type: Boolean, default: false },
-  otp: { type: Number },
-  otpExpiresAt: { type: Date, required: true, unique: true }
+  fullname: { 
+    type: String,
+    default: '',
+  },
+  phoneNumber: { 
+    type: String,
+    required: true,
+    unique: true,
+    default: '',
+  },
+  avatarURL: {
+    type: String,
+    default: '',
+  },
+  status: {
+    type: String,
+    default: '', 
+  },
+  isOnline: { 
+    type: String,
+    default: '', 
+  },
+  lastSeenAt: {
+    type: Date,
+    default: Date.now,
+  },
+  fcmTokens: { 
+    type: [String],
+    default: []
+  },
+  isRegistered: {
+    type: Boolean,
+    default: false 
+  },
+  otp: {
+    type: Number,
+    default: 0,
+  },
+  otpExpiresAt: {
+    type: Date,
+    default: Date.now,
+  }
 }, { timestamps: true });
 
 // ✅ Custom ordered JSON method
