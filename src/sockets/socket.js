@@ -47,7 +47,7 @@ export const initSocket = (httpServer) => {
           sender: senderId,
           content,
           mediaURL,
-          messageType, // "text" | "image" | "video" | "audio" | "file"
+          messageType,
         });
 
         // Update last message in chat
@@ -69,17 +69,65 @@ export const initSocket = (httpServer) => {
     socket.on("message-read", async ({ chatId, userId, messageIds }) => {
       try {
         const Message = await import("../models/messageModel.js").then(m => m.default);
-
-        // Mark messages as read by this user
         await Message.updateMany(
           { _id: { $in: messageIds }, chat: chatId },
           { $addToSet: { readBy: userId } } // add userId to readBy array
         );
-
-        // Notify other participants in the chat
         socket.to(chatId).emit("message-read", { chatId, userId, messageIds });
       } catch (err) {
         console.error("Error in message-read socket:", err);
+      }
+    });
+
+    // ===== Group Chat Events =====
+
+    // Create group
+    socket.on("create-group", async ({ groupName, groupAvatar = "", creatorId, participantIds }) => {
+      try {
+        const Chat = await import("../models/chatModel.js").then(m => m.default);
+        const participants = [creatorId, ...participantIds];
+
+        const groupChat = await Chat.create({
+          isGroupChat: true,
+          groupName,
+          groupAvatar,
+          participants,
+        });
+
+        io.to(participants).emit("group-created", groupChat); // notify all participants
+
+      } catch (err) {
+        console.error("Error creating group:", err);
+      }
+    });
+
+    // Add participant to group
+    socket.on("add-group-participant", async ({ chatId, userId }) => {
+      try {
+        const Chat = await import("../models/chatModel.js").then(m => m.default);
+        const updatedChat = await Chat.findByIdAndUpdate(
+          chatId,
+          { $addToSet: { participants: userId } },
+          { new: true }
+        );
+        io.to(chatId).emit("group-participant-added", { chatId, userId, updatedChat });
+      } catch (err) {
+        console.error("Error adding participant to group:", err);
+      }
+    });
+
+    // Remove participant from group
+    socket.on("remove-group-participant", async ({ chatId, userId }) => {
+      try {
+        const Chat = await import("../models/chatModel.js").then(m => m.default);
+        const updatedChat = await Chat.findByIdAndUpdate(
+          chatId,
+          { $pull: { participants: userId } },
+          { new: true }
+        );
+        io.to(chatId).emit("group-participant-removed", { chatId, userId, updatedChat });
+      } catch (err) {
+        console.error("Error removing participant from group:", err);
       }
     });
 
