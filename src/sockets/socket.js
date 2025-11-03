@@ -33,28 +33,33 @@ export const initSocket = (httpServer) => {
       socket.to(chatId).emit("typing", { chatId, userId });
     });
 
-    // ===== Send message =====
+    // ===== Send message (text or media) =====
     socket.on("send-message", async (messageData) => {
       try {
-        const { chatId, senderId, content, mediaURL, messageType } = messageData;
+        const { chatId, senderId, content = "", mediaURL = "", messageType = "text" } = messageData;
 
         const Message = await import("../models/messageModel.js").then(m => m.default);
         const Chat = await import("../models/chatModel.js").then(m => m.default);
 
+        // Create message
         const message = await Message.create({
           chat: chatId,
           sender: senderId,
           content,
           mediaURL,
-          messageType,
+          messageType, // "text" | "image" | "video" | "audio" | "file"
         });
 
+        // Update last message in chat
         await Chat.findByIdAndUpdate(chatId, { lastMessage: message._id, updatedAt: new Date() });
 
+        // Populate sender info
         const populatedMessage = await Message.findById(message._id)
           .populate("sender", "fullname phoneNumber avatarURL");
 
+        // Emit to all participants in chat
         io.to(chatId).emit("receive-message", populatedMessage);
+
       } catch (err) {
         console.error("Error in send-message socket:", err);
       }
