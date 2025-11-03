@@ -16,8 +16,13 @@ export const initSocket = (httpServer) => {
     console.log("⚡ New client connected:", socket.id);
 
     // ===== User comes online =====
-    socket.on("user-connected", (userId) => {
+    socket.on("user-connected", async (userId) => {
       onlineUsers[userId] = socket.id;
+
+      // Update user's online status in DB
+      const User = await import("../models/userModel.js").then(m => m.default);
+      await User.findByIdAndUpdate(userId, { isOnline: true, lastSeenAt: new Date() });
+
       io.emit("update-user-status", { userId, isOnline: true });
       console.log("Online users:", onlineUsers);
     });
