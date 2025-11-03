@@ -6,12 +6,14 @@ import logger from "morgan";
 import dotenv from "dotenv";
 import cors from "cors";
 import { createServer } from "http";
+
 import authRoutes from './src/routes/authRoutes.js';
 import chatRoutes from './src/routes/chatRoutes.js';
 import messageRoutes from './src/routes/messageRoutes.js';
 import { initSocket } from './src/sockets/socket.js';
 
 dotenv.config();
+
 const app = express();
 const httpServer = createServer(app);
 
