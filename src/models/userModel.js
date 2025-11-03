@@ -85,8 +85,8 @@ const userSchema = new Schema({
     default: '', 
   },
   isOnline: { 
-    type: String,
-    default: '', 
+    type: Boolean,
+    default: false,
   },
   lastSeenAt: {
     type: Date,
