@@ -20,7 +20,7 @@ export const requestOTP = async (req, res) => {
     // TODO: Send OTP via SMS
     console.log(`OTP for ${phoneNumber} is ${otp}`);
 
-    res.json({ success: true, message: `OTP ${otp} sent` });
+    res.json({ success: true, otp:otp, message: `OTP ${otp} sent` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
