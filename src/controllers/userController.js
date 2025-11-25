@@ -1,7 +1,4 @@
 import User from "../models/userModel.js";
-import jwt from "jsonwebtoken";
-import express from "express";
-
 
 // Update FCM Token
 export const updateFCMToken = async (req, res) => {
