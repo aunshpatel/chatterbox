@@ -22,7 +22,7 @@
 //   lastSeenAt:{
 //     type:Date
 //   },
-//   fcmTokens: {
+//   fcmToken: {
 //     type: [String],
 //     default: [],
 //   },
@@ -49,7 +49,7 @@
 //       status: ret.status,
 //       isOnline: ret.isOnline,
 //       lastSeenAt: ret.lastSeenAt,
-//       fcmTokens: ret.fcmTokens,
+//       fcmToken: ret.fcmToken,
 //       isRegistered: ret.isRegistered,
 //       otp: ret.otp,
 //       otpExpiresAt: ret.otpExpiresAt
@@ -118,7 +118,7 @@ const userSchema = new Schema({
 //     status: this.status,
 //     isOnline: this.isOnline,
 //     lastSeenAt: this.lastSeenAt,
-//     fcmTokens: this.fcmTokens,
+//     fcmToken: this.fcmToken,
 //     isRegistered: this.isRegistered,
 //     otp: this.otp,
 //     otpExpiresAt: this.otpExpiresAt

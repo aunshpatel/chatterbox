@@ -55,7 +55,7 @@ export const verifyOTP = async (req, res) => {
 // Register
 export const registerUser = async (req, res) => {
   try {
-    const { token, fullname, avatarURL, status, isOnline, fcmTokens } = req.body;
+    const { token, fullname, avatarURL, status, isOnline, fcmToken } = req.body;
     if (!token) return res.status(401).json({ message: "Token missing" });
 
     // 1. Verify token
@@ -75,7 +75,7 @@ export const registerUser = async (req, res) => {
     user.avatarURL = avatarURL || user.avatarURL;
     user.status = status || user.status;
     user.isOnline = isOnline || user.isOnline;
-    user.fcmTokens = fcmTokens || user.fcmTokens;
+    user.fcmToken = fcmToken || user.fcmToken;
 
     user.isRegistered = true;
     user.otp = null;
