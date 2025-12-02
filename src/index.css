@@ -1,4 +1,30 @@
-:root {
+@import "tailwindcss";
+/* main{
+  background-color: rgb(255, 255, 255, 0.75);
+  background-image: url('../src/assets/images/todo_list_background.jpg');
+  background-blend-mode:soft-light;
+  background-size:cover;
+  background-position:center;
+  min-height: 100vh;
+} */
+
+.input {
+  @apply border border-gray-300 rounded-md px-3 py-2 w-full text-sm focus:ring-2 focus:ring-[#2563EB] outline-none transition;
+}
+
+body {
+  @apply bg-[#F8FAFC] text-gray-900 font-sans;
+}
+
+/* In your CSS file or <style> */
+.autoscroll-container {
+  scrollbar-width: none !important; /* Firefox */
+}
+.autoscroll-container::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Edge */
+}
+
+/* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -65,4 +91,4 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-}
+} */
