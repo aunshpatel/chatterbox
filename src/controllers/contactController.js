@@ -33,27 +33,28 @@
 // }
 
 import User from "../models/userModel.js";
-function formatPhoneToDBStyle(phone) {
+
+/**
+ * Compress phone number to simple format: +CCXXXXXXXXXX
+ * - Keeps leading '+'
+ * - Removes all other non-digit characters
+ * - Works for any country code
+ */
+function compressPhone(phone) {
   if (!phone) return '';
 
-  // Remove all non-digit characters except '+'
-  phone = phone.replace(/[^\d+]/g, '');
-
-  // If it starts with '+', extract country code dynamically
+  // Keep leading '+' if it exists, remove everything else that's not a digit
   if (phone.startsWith('+')) {
-    // Match '+' followed by 1-3 digits for country code
-    const match = phone.match(/^\+\d{1,3}/);
-    if (match) {
-      const cc = match[0];                  // country code part
-      const rest = phone.slice(cc.length);  // rest of the number (local number)
-      return `${cc} ${rest}`;
-    }
+    return '+' + phone.slice(1).replace(/\D/g, '');
   }
 
-  // If no '+', just return digits as-is
-  return phone;
+  // If no '+', just remove non-digit characters
+  return phone.replace(/\D/g, '');
 }
 
+/**
+ * Controller: Returns registered users whose phone numbers match frontend numbers
+ */
 export const registeredUsers = async (req, res) => {
   try {
     const { phoneNumbers } = req.body;
@@ -64,20 +65,22 @@ export const registeredUsers = async (req, res) => {
 
     console.log(`Original phoneNumbers from frontend: ${phoneNumbers}`);
 
-    // Convert all frontend numbers to DB format
-    const formattedPhones = phoneNumbers.map(phone => formatPhoneToDBStyle(phone));
+    // Compress all frontend numbers to compare
+    const compressedPhones = phoneNumbers.map(phone => compressPhone(phone));
 
-    console.log(`Formatted phones for DB comparison: ${formattedPhones}`);
+    console.log(`Compressed frontend phones: ${compressedPhones}`);
 
-    // Fetch registered users from DB whose phoneNumber exactly matches formattedPhones
-    const registeredUsers = await User.find({
-      phoneNumber: { $in: formattedPhones },
+    // Fetch registered users from DB
+    const users = await User.find({
       isRegistered: true,
     }).select("phoneNumber fullname avatarURL status isOnline -_id");
 
-    console.log(`Registered users found: ${registeredUsers.length}`);
+    // Compress DB phone numbers for comparison
+    const matchedUsers = users.filter(user => compressedPhones.includes(compressPhone(user.phoneNumber)));
 
-    return res.json(registeredUsers);
+    console.log(`Matched users found: ${matchedUsers.length}`);
+
+    return res.json(matchedUsers);
 
   } catch (error) {
     console.error("Error fetching registered users:", error);
