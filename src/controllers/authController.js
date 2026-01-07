@@ -91,7 +91,6 @@ export const registerUser = async (req, res) => {
     res.json({
       success: true,
       message: "Registration completed",
-      // user: user.toOrderedJSON(), // ✅ works only on the mongoose document
       user: user,
       token: newToken
     });
@@ -100,9 +99,6 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
-// Login
 // export const loginUser = async (req, res) => {
 //   const { email, password } = req.body;
 
