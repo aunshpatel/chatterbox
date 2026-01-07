@@ -33,6 +33,26 @@
 // }
 
 import User from "../models/userModel.js";
+function formatPhoneToDBStyle(phone) {
+  if (!phone) return '';
+
+  // Remove all non-digit characters except '+'
+  phone = phone.replace(/[^\d+]/g, '');
+
+  // If it starts with '+', extract country code dynamically
+  if (phone.startsWith('+')) {
+    // Match '+' followed by 1-3 digits for country code
+    const match = phone.match(/^\+\d{1,3}/);
+    if (match) {
+      const cc = match[0];                  // country code part
+      const rest = phone.slice(cc.length);  // rest of the number (local number)
+      return `${cc} ${rest}`;
+    }
+  }
+
+  // If no '+', just return digits as-is
+  return phone;
+}
 
 export const registeredUsers = async (req, res) => {
   try {
@@ -42,23 +62,25 @@ export const registeredUsers = async (req, res) => {
       return res.status(400).json({ message: "phoneNumbers must be an array" });
     }
 
-    console.log(`Original phoneNumbers: ${phoneNumbers}`);
+    console.log(`Original phoneNumbers from frontend: ${phoneNumbers}`);
 
-    // Format frontend numbers to DB style
-    const formattedPhones = phoneNumbers.map(formatPhoneToDBStyle);
+    // Convert all frontend numbers to DB format
+    const formattedPhones = phoneNumbers.map(phone => formatPhoneToDBStyle(phone));
 
-    console.log(`Formatted phones: ${formattedPhones}`);
+    console.log(`Formatted phones for DB comparison: ${formattedPhones}`);
 
-    // Fetch only users whose phoneNumber exactly matches DB format
+    // Fetch registered users from DB whose phoneNumber exactly matches formattedPhones
     const registeredUsers = await User.find({
       phoneNumber: { $in: formattedPhones },
       isRegistered: true,
     }).select("phoneNumber fullname avatarURL status isOnline -_id");
 
+    console.log(`Registered users found: ${registeredUsers.length}`);
+
     return res.json(registeredUsers);
 
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching registered users:", error);
     return res.status(500).json({ message: "Failed to load registered contacts" });
   }
-}
+};
