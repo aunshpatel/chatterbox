@@ -4,8 +4,7 @@ import { registeredUsers } from "../controllers/contactController.js";
 
 const router = express.Router();
 
-// POST /api/contacts/registered
-// Body: { phoneNumbers: ["1234567890", "9876543210"] }
-router.post("/registered", protect, registeredUsers);
+// POST /api/contacts/contacts-check
+router.post("/contacts-check", protect, registeredUsers);
 
 export default router;
