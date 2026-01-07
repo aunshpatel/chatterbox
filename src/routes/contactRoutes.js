@@ -5,6 +5,6 @@ import { registeredUsers } from "../controllers/contactController.js";
 const router = express.Router();
 
 // POST /api/contacts/contacts-check
-router.get("/contacts-check", protect, registeredUsers);
+router.post("/contacts-check", protect, registeredUsers);
 
 export default router;
