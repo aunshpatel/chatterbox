@@ -50,44 +50,143 @@ export const getMyChats = async (req, res) => {
   }
 };
 
+// export const getChatList = async (req, res) => {
+//   try {
+//     const userId = req.user._id.toString();
+//     const search = req.query.search ? req.query.search.trim().toLowerCase() : null;
+
+//     // 1️⃣ Load user's contacts
+//     const contacts = await Contact.find({ ownerUserId: userId });
+//     const contactMap = new Map();
+//     contacts.forEach(c => {
+//       contactMap.set(c.phoneNumber, c.savedName);
+//     });
+
+//     // 2️⃣ Fetch chats
+//     const chats = await Chat.find({ participants: userId }).populate("participants", "fullname phoneNumber avatarURL")
+//     .populate({
+//       path: "lastMessage",
+//       populate: {
+//         path: "sender",
+//         select: "fullname phoneNumber",
+//       },
+//     }).sort({ updatedAt: -1 });
+
+//     const results = [];
+
+//     for (const chat of chats) {
+//       let displayName = "";
+//       let avatarURL = "";
+//       let displaySubName = null;
+//       let lastMessageText = "";
+//       let lastMessageTime = "";
+
+//       // PRIVATE CHAT
+//       if (!chat.isGroupChat) {
+//         const otherUser = chat.participants.find(
+//           p => p._id.toString() !== userId
+//         );
+
+//         displayName = contactMap.get(otherUser.phoneNumber) || otherUser.fullname || otherUser.phoneNumber;
+//         avatarURL = otherUser.avatarURL;
+//       }
+
+//       // GROUP CHAT
+//       if (chat.isGroupChat) {
+//         displayName = chat.groupName;
+//         avatarURL = chat.groupAvatar;
+//       }
+
+//       // LAST MESSAGE
+//       if (chat.lastMessage) {
+//         lastMessageText = chat.lastMessage.content || "";
+//         lastMessageTime = formatChatTime(chat.lastMessage.createdAt);
+
+//         if (chat.isGroupChat && search) {
+//           const sender = chat.lastMessage.sender;
+//           const senderName = contactMap.get(sender.phoneNumber) || sender.fullname || sender.phoneNumber;
+//           displaySubName = `${senderName}: ${lastMessageText}`;
+//         }
+//       }
+
+//       // SEARCH FILTER
+//       if (search) {
+//         const nameMatch = displayName.toLowerCase().includes(search);
+//         const msgMatch = lastMessageText.toLowerCase().includes(search);
+//         if (!nameMatch && !msgMatch) continue;
+//       }
+
+//       results.push({
+//         chatId: chat._id,
+//         isGroupChat: chat.isGroupChat,
+//         displayName,
+//         displaySubName,
+//         avatarURL,
+//         lastMessage: lastMessageText,
+//         lastMessageTime,
+//       });
+//     }
+
+//     if (search) {
+//       results.sort((a, b) => a.displayName.localeCompare(b.displayName));
+//     }
+
+//     res.json({ success: true, chats: results });
+//   } catch (error) {
+//     console.error("Chat list error:", error);
+//     res.status(500).json({ message: "Failed to fetch chat list" });
+//   }
+// };
+
+
 export const getChatList = async (req, res) => {
   try {
     const userId = req.user._id.toString();
-    const search = req.query.search ? req.query.search.trim().toLowerCase() : null;
+    const search = req.query.search?.trim().toLowerCase() || null;
 
-    // 1️⃣ Load user's contacts
+    // 1️⃣ Load contacts
     const contacts = await Contact.find({ ownerUserId: userId });
     const contactMap = new Map();
-    contacts.forEach(c => {
-      contactMap.set(c.phoneNumber, c.savedName);
-    });
+    contacts.forEach(c => contactMap.set(c.phoneNumber, c.savedName));
 
     // 2️⃣ Fetch chats
     const chats = await Chat.find({ participants: userId }).populate("participants", "fullname phoneNumber avatarURL")
     .populate({
       path: "lastMessage",
-      populate: {
-        path: "sender",
-        select: "fullname phoneNumber",
-      },
+      populate: { path: "sender", select: "fullname phoneNumber" }
     }).sort({ updatedAt: -1 });
+
+    let messageMatches = new Map();
+
+    // 3️⃣ If searching, find matching messages
+    if (search) {
+      const matchedMessages = await Message.find({
+        content: { $regex: search, $options: "i" },
+        deletedFor: { $ne: userId }
+      }).populate("sender", "fullname phoneNumber").sort({ createdAt: -1 });
+
+      for (const msg of matchedMessages) {
+        if (!messageMatches.has(msg.chat.toString())) {
+          messageMatches.set(msg.chat.toString(), msg);
+        }
+      }
+    }
 
     const results = [];
 
     for (const chat of chats) {
       let displayName = "";
       let avatarURL = "";
-      let displaySubName = null;
-      let lastMessageText = "";
-      let lastMessageTime = "";
+      let previewText = "";
+      let previewTime = "";
+      let isMatch = false;
 
       // PRIVATE CHAT
       if (!chat.isGroupChat) {
-        const otherUser = chat.participants.find(
-          p => p._id.toString() !== userId
-        );
+        const otherUser = chat.participants.find(p => p._id.toString() !== userId);
 
         displayName = contactMap.get(otherUser.phoneNumber) || otherUser.fullname || otherUser.phoneNumber;
+
         avatarURL = otherUser.avatarURL;
       }
 
@@ -97,43 +196,55 @@ export const getChatList = async (req, res) => {
         avatarURL = chat.groupAvatar;
       }
 
-      // LAST MESSAGE
-      if (chat.lastMessage) {
-        lastMessageText = chat.lastMessage.content || "";
-        lastMessageTime = formatChatTime(chat.lastMessage.createdAt);
+      // MESSAGE MATCH HAS PRIORITY
+      const matchedMessage = messageMatches.get(chat._id.toString());
 
-        if (chat.isGroupChat && search) {
-          const sender = chat.lastMessage.sender;
-          const senderName = contactMap.get(sender.phoneNumber) || sender.fullname || sender.phoneNumber;
-          displaySubName = `${senderName}: ${lastMessageText}`;
+      if (matchedMessage) {
+        isMatch = true;
+        previewTime = formatChatTime(matchedMessage.createdAt);
+
+        if (chat.isGroupChat) {
+          const senderName = contactMap.get(matchedMessage.sender.phoneNumber) || matchedMessage.sender.fullname ||  matchedMessage.sender.phoneNumber;
+
+          previewText = `${senderName}: ${matchedMessage.content}`;
+        } else {
+          previewText = matchedMessage.content;
         }
+      }
+      // FALLBACK TO LAST MESSAGE
+      else if (chat.lastMessage) {
+        previewText = chat.lastMessage.content || "";
+        previewTime = formatChatTime(chat.lastMessage.createdAt);
       }
 
       // SEARCH FILTER
       if (search) {
         const nameMatch = displayName.toLowerCase().includes(search);
-        const msgMatch = lastMessageText.toLowerCase().includes(search);
-        if (!nameMatch && !msgMatch) continue;
+        if (!nameMatch && !matchedMessage) continue;
       }
 
       results.push({
         chatId: chat._id,
         isGroupChat: chat.isGroupChat,
         displayName,
-        displaySubName,
         avatarURL,
-        lastMessage: lastMessageText,
-        lastMessageTime,
+        lastMessage: previewText,
+        lastMessageTime: previewTime,
+        matched: isMatch
       });
     }
 
+    // 4️⃣ Sorting rules (WhatsApp behavior)
     if (search) {
-      results.sort((a, b) => a.displayName.localeCompare(b.displayName));
+      results.sort((a, b) => {
+        if (a.matched !== b.matched) return b.matched - a.matched;
+        return a.displayName.localeCompare(b.displayName);
+      });
     }
 
     res.json({ success: true, chats: results });
   } catch (error) {
-    console.error("Chat list error:", error);
+    console.error("Chat list search error:", error);
     res.status(500).json({ message: "Failed to fetch chat list" });
   }
 };
