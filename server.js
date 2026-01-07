@@ -11,6 +11,7 @@ import authRoutes from './src/routes/authRoutes.js';
 import userRoutes from './src/routes/userRoutes.js'
 import chatRoutes from './src/routes/chatRoutes.js';
 import messageRoutes from './src/routes/messageRoutes.js';
+import contactsRouter from './src/routes/contactRoutes.js';
 import { initSocket } from './src/sockets/socket.js';
 
 dotenv.config();
@@ -35,6 +36,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
+app.use("/api/contacts", contactsRouter);
 
 // ------ Serve frontend SPA ------
 const __filename = fileURLToPath(import.meta.url);
