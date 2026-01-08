@@ -43,50 +43,34 @@
 //   }
 // };
 
-// contactController.js
+
 import User from "../models/userModel.js";
 
-/*** Compress phone number: removes all non-digit characters except leading + */
 function compressPhone(phone) {
   if (!phone) return '';
-  
-  // If it starts with +, keep it. Otherwise just digits.
-  if (phone.startsWith('+')) {
-    return '+' + phone.slice(1).replace(/\D/g, '');
-  }
-  return phone.replace(/\D/g, '');
+  return phone.replace(/\D/g, ''); // Strips everything except digits
 }
 
-/*** Controller: Returns registered users whose phone numbers match frontend numbers */
 export const registeredUsers = async (req, res) => {
   try {
     const { phoneNumbers } = req.body;
+    if (!Array.isArray(phoneNumbers)) return res.status(400).send("Invalid input");
 
-    if (!Array.isArray(phoneNumbers)) {
-      return res.status(400).json({ message: "phoneNumbers must be an array" });
-    }
+    const compressedPhones = phoneNumbers.map(p => compressPhone(p));
 
-    // 1. Clean the incoming list from the phone
-    const compressedFrontEndPhones = phoneNumbers.map(p => compressPhone(p));
+    // Get all registered users
+    const users = await User.find({ isRegistered: true })
+      .select("phoneNumber fullname avatarURL status isOnline -_id");
 
-    // 2. Fetch ALL registered users (This is the "Old" logic that works)
-    const users = await User.find({
-      isRegistered: true,
-    }).select("phoneNumber fullname avatarURL status isOnline -_id");
-
-    // 3. Filter manually in JavaScript
-    // We compress the DB phone number right here effectively standardizing it before comparison
+    // Match them
     const matchedUsers = users.filter(user => {
-      const dbPhoneClean = compressPhone(user.phoneNumber);
-      return compressedFrontEndPhones.includes(dbPhoneClean);
+      const cleanDbPhone = compressPhone(user.phoneNumber);
+      // We check if the DB phone (cleaned) exists in the requested list (cleaned)
+      return compressedPhones.includes(cleanDbPhone);
     });
 
-    console.log(`Matched users found: ${matchedUsers.length}`);
-
     return res.json(matchedUsers);
-
   } catch (error) {
-    console.error("Error fetching registered users:", error);
-    return res.status(500).json({ message: "Failed to load registered contacts" });
+    return res.status(500).json({ message: "Error" });
   }
 };
