@@ -43,14 +43,14 @@
 //   }
 // };
 
+// contactController.js
 import User from "../models/userModel.js";
 
-/*** * Helper: Compress phone number 
- * Ideally, your DB and Frontend should both use E.164 standard (e.g., +1234567890)
- */
+/*** Compress phone number: removes all non-digit characters except leading + */
 function compressPhone(phone) {
   if (!phone) return '';
-  // Keep leading '+' if exists, remove everything else that's not a digit
+  
+  // If it starts with +, keep it. Otherwise just digits.
   if (phone.startsWith('+')) {
     return '+' + phone.slice(1).replace(/\D/g, '');
   }
@@ -66,17 +66,20 @@ export const registeredUsers = async (req, res) => {
       return res.status(400).json({ message: "phoneNumbers must be an array" });
     }
 
-    // 1. Clean the incoming list of numbers
-    const compressedPhones = phoneNumbers
-        .map(phone => compressPhone(phone))
-        .filter(p => p.length > 0); // remove empty strings
+    // 1. Clean the incoming list from the phone
+    const compressedFrontEndPhones = phoneNumbers.map(p => compressPhone(p));
 
-    // 2. Query the Database directly for these numbers
-    // The '$in' operator finds any document where 'phoneNumber' exists in our list
-    const matchedUsers = await User.find({
+    // 2. Fetch ALL registered users (This is the "Old" logic that works)
+    const users = await User.find({
       isRegistered: true,
-      phoneNumber: { $in: compressedPhones } 
     }).select("phoneNumber fullname avatarURL status isOnline -_id");
+
+    // 3. Filter manually in JavaScript
+    // We compress the DB phone number right here effectively standardizing it before comparison
+    const matchedUsers = users.filter(user => {
+      const dbPhoneClean = compressPhone(user.phoneNumber);
+      return compressedFrontEndPhones.includes(dbPhoneClean);
+    });
 
     console.log(`Matched users found: ${matchedUsers.length}`);
 
