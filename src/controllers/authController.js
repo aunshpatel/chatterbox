@@ -99,20 +99,13 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-// export const loginUser = async (req, res) => {
-//   const { email, password } = req.body;
 
-//   try {
-//     const user = await User.findOne({ email });
-//     if (!user) return res.status(400).json({ message: "User not found" });
-
-//     const isMatch = await bcrypt.compare(password, user.passwordHash);
-//     if (!isMatch) return res.status(400).json({ message: "Invalid password" });
-
-//     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-
-//     res.status(200).json({ user, token });
-//   } catch (err) {
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie('access_token');
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (err) {
+    console.error('Logout error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
