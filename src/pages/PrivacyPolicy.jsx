@@ -1,132 +1,3 @@
-// export default function PrivacyPolicy() {
-//   return (
-//     <main>
-//       <div className="pt-4 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-//         <div className="bg-white bg-opacity-70 shadow-md rounded-lg p-6 sm:p-8">
-//           <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-slate-800 text-center sm:text-left">
-//             Privacy Policy
-//           </h1>
-
-//           <section className="mb-6 text-slate-700 leading-relaxed">
-//             <p>
-//               Welcome to <strong>Chatterbox</strong> ("we", "our", or "us"). We
-//               value your privacy and are committed to protecting your personal
-//               data. This Privacy Policy describes how we collect, use, and
-//               protect your information when you use our website and mobile app.
-//             </p>
-//           </section>
-
-//           <section className="mb-6">
-//             <h2 className="font-bold text-slate-800">1. Information We Collect</h2>
-//             <p className="mt-2 text-slate-700">
-//               When you create an account with Chatterbox, we collect the
-//               following personal information:
-//             </p>
-//             <ul className="mt-2 list-disc list-inside text-slate-700 ml-4">
-//               <li>Full Name</li>
-//               <li>Phone Number (with country code)</li>
-//               <li>Profile Photo</li>
-//             </ul>
-//             <p className="mt-2 text-slate-700">
-//               This data is securely stored in our database and retained only
-//               while your account is active.
-//             </p>
-//           </section>
-
-//           <section className="mb-6">
-//             <h2 className="font-bold text-slate-800">2. Data Deletion</h2>
-//             <p className="mt-2 text-slate-700">
-//               You have full control to delete your account at any time from both
-//               the website and mobile app. Once your account is deleted, all
-//               associated personal data is permanently removed from our systems.
-//             </p>
-//           </section>
-
-//           <section className="mb-6">
-//             <h2 className="font-bold text-slate-800">3. Push Notifications</h2>
-//             <p className="mt-2 text-slate-700">
-//               We may send push notifications if you have opted in. You can
-//               disable notifications at any time through your device or app
-//               settings.
-//             </p>
-//           </section>
-
-//           <section className="mb-6">
-//             <h2 className="font-bold text-slate-800">4. How We Use Your Information</h2>
-//             <p className="mt-2 text-slate-700">We use your personal data to:</p>
-//             <ul className="mt-2 list-disc list-inside text-slate-700 ml-4">
-//               <li>Create and manage your account</li>
-//               <li>Enable core features of the app and website</li>
-//               <li>Send push notifications (if enabled)</li>
-//             </ul>
-//             <p className="mt-2 text-slate-700">
-//               We do not sell, rent, or share your information with third parties
-//               for marketing or advertising purposes.
-//             </p>
-//           </section>
-
-//           <section className="mb-6">
-//             <h2 className="font-bold text-slate-800">5. Security</h2>
-//             <p className="mt-2 text-slate-700">
-//               We implement reasonable technical and organizational measures to
-//               protect your information from unauthorized access, loss, or misuse.
-//             </p>
-//           </section>
-
-//           <section className="mb-6">
-//             <h2 className="font-bold text-slate-800">6. Children's Privacy</h2>
-//             <p className="mt-2 text-slate-700">
-//               Chatterbox is not intended for children under the age of 13. We
-//               do not knowingly collect personal data from children.
-//             </p>
-//           </section>
-
-//           <section className="mb-6">
-//             <h2 className="font-bold text-slate-800">7. Your Rights</h2>
-//             <p className="mt-2 text-slate-700">You may:</p>
-//             <ul className="mt-2 list-disc list-inside text-slate-700 ml-4">
-//               <li>Access and update your account information</li>
-//               <li>Delete your account and associated data at any time</li>
-//               <li>Opt out of receiving push notifications</li>
-//             </ul>
-//           </section>
-
-//           <section className="mb-6">
-//             <h2 className="font-bold text-slate-800">8. Contact Us</h2>
-//             <p className="mt-2 text-slate-700">
-//               If you have any questions about this Privacy Policy, please contact us at:&nbsp;
-//               <a href="https://chatterbox-sxu1.onrender.com/contact-us" target="_blank" rel="noopener noreferrer" className="underline text-blue-600 break-all">https://chatterbox-sxu1.onrender.com/contact-us</a>
-//             </p>
-//           </section>
-
-//           <section className="mb-6">
-//             <h2 className="font-bold text-slate-800">9. No Purchases or Fees</h2>
-//             <p className="mt-2 text-slate-700">
-//               Chatterbox is completely free to use. We do not offer in-app
-//               purchases or require any payment.
-//             </p>
-//           </section>
-
-//           <section className="mb-6">
-//             <h2 className="font-bold text-slate-800">10. Changes to This Policy</h2>
-//             <p className="mt-2 text-slate-700">
-//               We may update this Privacy Policy from time to time. Any changes
-//               will be reflected on this page with an updated effective date.
-//               Please review this policy periodically for updates. This policy is
-//               effective as of 2025-07-18 (18 July, 2025).
-//             </p>
-//           </section>
-
-//           <p className="text-slate-700">
-//             By using Chatterbox, you agree to the terms outlined in this
-//             Privacy Policy.
-//           </p>
-//         </div>
-//       </div>
-//     </main>
-//   )
-// }
-
 export default function PrivacyPolicy() {
   return (
     <main>
@@ -135,6 +6,14 @@ export default function PrivacyPolicy() {
           <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-slate-800 text-center sm:text-left">
             Privacy Policy
           </h1>
+
+          <p className="text-lg font-bold mb-6 text-slate-800 text-center sm:text-left">
+            <strong>Effective Date:</strong> 18 July, 2025
+          </p>
+
+          <p className="text-lg font-bold mb-6 text-slate-800 text-center sm:text-left">
+            <strong>Last Updated On:</strong> 18 July, 2025
+          </p>
 
           <section className="mb-6 text-slate-700 leading-relaxed">
             <p>
