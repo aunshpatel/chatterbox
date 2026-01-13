@@ -45,6 +45,10 @@ export default function Header() {
                   <li className='text-md text-white'>Privacy Policy</li>
                 </Link>
 
+                <Link to='/terms-and-conditions' className="border-b border-gray-400 uppercase">
+                  <li className='text-md text-white'>Terms & Conditions</li>
+                </Link>
+
                 <Link to='/delete-profile-instructions' className="border-b border-gray-400 uppercase">
                   <li className='text-md text-white'>Delete Profile Instructions</li>
                 </Link>
@@ -61,6 +65,10 @@ export default function Header() {
             </Link>
             <Link to='/privacy-policy' className="border-b border-gray-400 uppercase">
               <li className='text-md text-white'>Privacy Policy</li>
+            </Link>
+            
+            <Link to='/terms-and-conditions' className="border-b border-gray-400 uppercase">
+              <li className='text-md text-white'>Terms & Conditions</li>
             </Link>
 
             <Link to='/delete-profile-instructions' className="border-b border-gray-400 uppercase">
