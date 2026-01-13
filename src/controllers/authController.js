@@ -45,7 +45,8 @@ export const verifyOTP = async (req, res) => {
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
 
-    res.json({ success: true, isRegistered: user.isRegistered, token });
+    // res.json({ success: true, isRegistered: user.isRegistered, token });
+    res.json({ success: true, userData: user, token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
