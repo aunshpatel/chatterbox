@@ -1,6 +1,6 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
-import { registerUser, requestOTP, verifyOTP, logout } from "../controllers/authController.js";
+import { registerUser, requestOTP, verifyOTP, logout, deleteUser } from "../controllers/authController.js";
 
 const router = express.Router();
 
@@ -13,5 +13,7 @@ router.post('/logout', protect, logout);
 router.post('/request-otp', requestOTP);
 
 router.post('/verify-otp', verifyOTP);
+
+router.delete('/delete/:id', protect, deleteUser);
 
 export default router;
