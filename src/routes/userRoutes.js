@@ -1,6 +1,6 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
-import { updateFCMToken, getUserByID } from "../controllers/userController.js";
+import { updateFCMToken, getUserByID, updateUser } from "../controllers/userController.js";
 
 const router = express.Router();
 
