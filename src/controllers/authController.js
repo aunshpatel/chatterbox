@@ -72,9 +72,9 @@ export const registerUser = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     // 3. Update user data
-    user.fullname = fullname || user.fullname;
+    user.fullname = fullname.trim() || user.fullname.trim();
     user.avatarURL = avatarURL || user.avatarURL;
-    user.status = status || user.status;
+    user.status = status.trim() || user.status.trim();
     user.isOnline = isOnline || user.isOnline;
     user.fcmToken = fcmToken || user.fcmToken;
 
