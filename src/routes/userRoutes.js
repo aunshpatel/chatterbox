@@ -1,8 +1,11 @@
 import express from "express";
-import { updateFCMToken } from "../controllers/userController.js";
+import { protect } from "../middleware/authMiddleware.js";
+import { updateFCMToken, getUserByID } from "../controllers/userController.js";
 
 const router = express.Router();
 
-router.post('/users/:userId/update-fcm', updateFCMToken);
+router.post('/users/:userId/update-fcm', protect, updateFCMToken);
+
+router.get('/get-user/:id', protect, getUserByID);
 
 export default router;
