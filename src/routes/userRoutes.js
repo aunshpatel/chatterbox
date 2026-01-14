@@ -8,4 +8,6 @@ router.post('/users/:userId/update-fcm', protect, updateFCMToken);
 
 router.get('/get-user/:id', protect, getUserByID);
 
+router.push('/update/:id', protect, updateUser);
+
 export default router;

@@ -36,3 +36,96 @@ export const getUserByID = async (req, res, next) => {
       next(error);
   }
 }
+
+// export const updateUser = async (req, res, next) => {
+//   try {
+
+//     // Update the user
+//     const updatedUser = await User.findByIdAndUpdate(
+//       req.params.id,
+//       {
+//         $set: {
+//           fullname: req.body.fullname,
+//           phoneNumber: req.body.phoneNumber,
+//           avatarURL: req.body.avatarURL,
+//           status: req.body.status,
+//         },
+//       },
+//       { new: true }
+//     );
+
+//     if (!updatedUser) {
+//       return next(errorHandler(404, "User not found!"));
+//     }
+
+//     // Destructure password out
+//     const { password, ...rest } = updatedUser._doc;
+
+//     // Generate a new token (optional, or reuse the existing one)
+//     // const token = jwt.sign({ id: updatedUser._id }, process.env.JWT_SECRET);
+
+//     // Send back user data and existing token
+//     const existingToken = req.headers.authorization?.split(" ")[1]; // If frontend sends old token
+//     res.status(200).json({
+//       success: true,
+//       message: "User updated successfully",
+//       token: existingToken, // Preserve old token
+//       user: rest
+//     });
+
+//   } catch (error) {
+//     next(error);
+//     // console.log("Error updating user: ", error);
+//   }
+// };
+
+export const updateUser = async (req, res, next) => {
+  try {
+    let { fullname, phoneNumber, avatarURL, status } = req.body;
+
+    // ✅ Fullname validation and trimming
+    if (fullname !== undefined) {
+      fullname = fullname.trim(); // remove leading/trailing spaces
+      if (fullname === "") {
+        return next(errorHandler(400, "Fullname cannot be empty"));
+      }
+    }
+    // Trim status
+    if (status !== undefined && typeof status === "string") {
+      status = status.trim();
+    }
+    // Trim phoneNumber
+    if (phoneNumber !== undefined && typeof phoneNumber === "string") {
+      phoneNumber = phoneNumber.trim();
+    }
+
+    // Prepare updates, only include fields that are defined
+    const updates = { fullname, phoneNumber, avatarURL, status };
+    Object.keys(updates).forEach(
+      (key) => updates[key] === undefined && delete updates[key]
+    );
+
+    // Find user and update
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: updates },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return next(errorHandler(404, "User not found!"));
+    }
+
+    // Preserve existing token if provided
+    const existingToken = req.headers.authorization?.split(" ")[1];
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      token: existingToken,
+      user: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
