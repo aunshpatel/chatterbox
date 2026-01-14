@@ -37,7 +37,6 @@ app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/contacts", contactsRouter);
-app.use("/api/user", userRoutes);
 
 // ------ Serve frontend SPA ------
 const __filename = fileURLToPath(import.meta.url);
