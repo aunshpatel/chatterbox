@@ -4,7 +4,8 @@ import { updateFCMToken, getUserByID, updateUser } from "../controllers/userCont
 
 const router = express.Router();
 
-router.post('/users/:userId/update-fcm', protect, updateFCMToken);
+// router.post('/users/:userId/update-fcm', protect, updateFCMToken);
+router.post('/users/update-fcm', protect, updateFCMToken);
 
 router.get('/get-user/:id', protect, getUserByID);
 
