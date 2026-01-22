@@ -51,11 +51,23 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-const deviceSchema = new Schema({
-  deviceId: { type: String, required: true },
-  fcmToken: { type: String, required: true },
-  lastUsedAt: { type: Date, default: Date.now }
-}, { _id: false });
+const deviceSchema = new Schema(
+  {
+    deviceId: {
+      type: String,
+      required: true,
+    },
+    fcmToken: {
+      type: String,
+      required: true,
+    },
+    lastUsedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+);
 
 const userSchema = new Schema({
   fullname: { 
@@ -86,7 +98,7 @@ const userSchema = new Schema({
   },
   devices: {
     type: [deviceSchema],
-    default: []
+    default: [],
   },
   isRegistered: {
     type: Boolean,
