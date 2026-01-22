@@ -197,22 +197,30 @@ export const registerUser = async (req, res) => {
     user.isOnline = isOnline || user.isOnline;
     user.isRegistered = true;
     user.lastSeenAt = new Date();
-
     if (deviceId && fcmToken) {
-      if (user.devices.length >= 5) {
-        user.devices.sort(
-          (a, b) => new Date(a.lastUsedAt) - new Date(b.lastUsedAt)
-        );
-        user.devices.shift();
+      const existingIndex = user.devices.findIndex(
+        (d) => d.deviceId === deviceId
+      );
+
+      if (existingIndex !== -1) {
+        user.devices[existingIndex].fcmToken = fcmToken;
+        user.devices[existingIndex].lastUsedAt = new Date();
+      } else {
+        if (user.devices.length >= 5) {
+          user.devices.sort(
+            (a, b) => new Date(a.lastUsedAt) - new Date(b.lastUsedAt)
+          );
+          user.devices.shift();
+        }
+
+        user.devices.push({
+          deviceId,
+          fcmToken,
+          lastUsedAt: new Date(),
+        });
       }
-
-      user.devices.push({
-        deviceId,
-        fcmToken,
-        lastUsedAt: new Date(),
-      });
     }
-
+    
     await user.save();
 
     const newToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
