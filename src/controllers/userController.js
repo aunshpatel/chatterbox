@@ -1,4 +1,5 @@
 import User from "../models/userModel.js";
+import errorHandler from "../utils/errorHandler.js";
 
 export const updateFCMToken = async (req, res) => {
   const userId = req.user?.id; // protect middleware must attach req.user

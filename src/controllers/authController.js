@@ -1,5 +1,6 @@
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
+import errorHandler from "../utils/errorHandler.js";
 
 export const requestOTP = async (req, res) => {
   try {
