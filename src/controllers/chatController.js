@@ -6,47 +6,77 @@ import { formatChatTime } from "../utils/formatChatTime.js";
 export const createOrGetChat = async (req, res) => {
   try {
     const { receiverId } = req.body;
-    if (!receiverId) return res.status(400).json({ message: "Receiver required" });
 
-    // 1️⃣ Check if a chat already exists between the two users
+    if (!receiverId) {
+      return res.status(400).json({ message: "Receiver required" });
+    }
+
+    // Always sort participants to prevent duplicates
+    const sortedParticipants = [
+      req.user._id.toString(),
+      receiverId.toString(),
+    ].sort();
+
+    // 1️⃣ Check if chat already exists
     let chat = await Chat.findOne({
-      participants: { $all: [req.user._id, receiverId] },
+      participants: sortedParticipants,
       isGroupChat: false,
     }).populate("participants", "fullname phoneNumber avatarURL");
 
-    // 2️⃣ If no chat exists, create a new one
+    // 2️⃣ If not, create new chat
     if (!chat) {
-      chat = new Chat({
-        participants: [req.user._id, receiverId],
-      });
-      await chat.save();
+      try {
+        chat = new Chat({
+          participants: sortedParticipants,
+          isGroupChat: false,
+        });
 
-      // Re-populate participants after saving
-      chat = await Chat.findById(chat._id).populate(
-        "participants",
-        "fullname phoneNumber avatarURL"
-      );
+        await chat.save();
+      } catch (err) {
+        // Handle duplicate race condition safely
+        chat = await Chat.findOne({
+          participants: sortedParticipants,
+          isGroupChat: false,
+        }).populate("participants", "fullname phoneNumber avatarURL");
+      }
+
+      if (!chat) {
+        chat = await Chat.findById(chat._id).populate(
+          "participants",
+          "fullname phoneNumber avatarURL"
+        );
+      }
     }
 
-    res.json({ success: true, chat });
+    return res.json({ success: true, chat });
   } catch (err) {
     console.error("Error in createOrGetChat:", err);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
 // Get all chats for logged-in user
 export const getMyChats = async (req, res) => {
   try {
-    const chats = await Chat.find({ participants: req.user._id })
-      .populate("participants", "fullname phoneNumber avatarURL isOnline lastSeenAt")
-      .populate("lastMessage")
-      .sort({ updatedAt: -1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 30;
+    const skip = (page - 1) * limit;
 
-    res.json({ success: true, chats });
+    const chats = await Chat.find({ participants: req.user._id })
+      .populate(
+        "participants",
+        "fullname phoneNumber avatarURL isOnline lastSeenAt"
+      )
+      .populate("lastMessage")
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    return res.json({ success: true, chats });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -143,18 +173,24 @@ export const getChatList = async (req, res) => {
     const userId = req.user._id.toString();
     const search = req.query.search ? req.query.search.trim().toLowerCase() : null;
 
-    const contacts = await Contact.find({ ownerUserId: userId });
-    const contactMap = new Map();
-    contacts.forEach(c => { contactMap.set(c.phoneNumber, c.savedName) });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 30;
+    const skip = (page - 1) * limit;
 
-    const chats = await Chat.find({ participants: userId }).populate("participants", "fullname phoneNumber avatarURL")
-    .populate({
+    const contacts = await Contact.find({ ownerUserId: userId }).lean();
+
+    const contactMap = new Map();
+    contacts.forEach((c) => {
+      contactMap.set(c.phoneNumber, c.savedName);
+    });
+
+    const chats = await Chat.find({ participants: userId }).populate("participants", "fullname phoneNumber avatarURL").populate({
       path: "lastMessage",
       populate: {
         path: "sender",
         select: "fullname phoneNumber",
       },
-    }).sort({ updatedAt: -1 });
+    }).sort({ updatedAt: -1 }).skip(skip).limit(limit).lean();
 
     const results = [];
 
@@ -166,11 +202,16 @@ export const getChatList = async (req, res) => {
       let lastMessageTime = "";
 
       if (!chat.isGroupChat) {
-        const otherUser = chat.participants.find(p => p._id.toString() !== userId);
+        const otherUser = chat.participants.find(
+          (p) => p._id.toString() !== userId
+        );
 
         if (!otherUser) continue;
 
-        displayName = contactMap.get(otherUser.phoneNumber) || otherUser.fullname || otherUser.phoneNumber;
+        displayName =
+          contactMap.get(otherUser.phoneNumber) ||
+          otherUser.fullname ||
+          otherUser.phoneNumber;
 
         avatarURL = otherUser.avatarURL;
       }
@@ -186,33 +227,49 @@ export const getChatList = async (req, res) => {
 
         if (chat.isGroupChat && search) {
           const sender = chat.lastMessage.sender;
-          const senderName = contactMap.get(sender.phoneNumber) || sender.fullname || sender.phoneNumber;
 
-          displaySubName = `${senderName}: ${lastMessageText}`;
+          if (sender) {
+            const senderName = contactMap.get(sender.phoneNumber) || sender.fullname || sender.phoneNumber;
+            displaySubName = `${senderName}: ${lastMessageText}`;
+          }
         }
       }
 
       if (search) {
         const nameMatch = displayName.toLowerCase().includes(search);
         const msgMatch = lastMessageText.toLowerCase().includes(search);
+
         if (!nameMatch && !msgMatch) continue;
       }
 
-      results.push({chatId: chat._id, isGroupChat: chat.isGroupChat, displayName, displaySubName, avatarURL, lastMessage: lastMessageText, lastMessageTime});
+      results.push({
+        chatId: chat._id,
+        isGroupChat: chat.isGroupChat,
+        displayName,
+        displaySubName,
+        avatarURL,
+        lastMessage: lastMessageText,
+        lastMessageTime,
+      });
     }
 
     if (search) {
       results.sort((a, b) => a.displayName.localeCompare(b.displayName));
     }
 
-    return res.json({ success: true, chats: results, message: results.length === 0 ? "No chats yet" : null });
-
+    return res.json({
+      success: true,
+      chats: results,
+      message: results.length === 0 ? "No chats yet" : null,
+    });
   } catch (error) {
     console.error("Chat list error:", error);
-    return res.status(500).json({ success: false, message: "Failed to fetch chat list" });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch chat list",
+    });
   }
 };
-
 
 // export const getChatList = async (req, res) => {
 //   try {
